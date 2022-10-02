@@ -1,0 +1,7 @@
+use_frameworks!
+
+platform :ios, '10.0'
+
+target 'YFProgressHud_Example' do
+  pod 'YFProgressHud', :path => '../'
+end

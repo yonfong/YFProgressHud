@@ -1,0 +1,6 @@
+framework module YFProgressHud {
+  umbrella header "YFProgressHud-umbrella.h"
+
+  export *
+  module * { export * }
+}

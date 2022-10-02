@@ -1,0 +1,23 @@
+PODS:
+  - SnapKit (5.6.0)
+  - YFProgressHud (1.0.0):
+    - SnapKit (~> 5.6.0)
+
+DEPENDENCIES:
+  - YFProgressHud (from `../`)
+
+SPEC REPOS:
+  trunk:
+    - SnapKit
+
+EXTERNAL SOURCES:
+  YFProgressHud:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
+  YFProgressHud: 14f2bd41bd61a52225207178e86748114809d939
+
+PODFILE CHECKSUM: e7fc5849a6c9e4220ef029b145efe7c3eead06fc
+
+COCOAPODS: 1.11.3
