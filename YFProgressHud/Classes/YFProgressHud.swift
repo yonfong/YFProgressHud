@@ -469,7 +469,7 @@ open class YFProgressHud: UIView {
 extension YFProgressHud {
     //MARK: - Show & Hide
     public func show(animated: Bool) {
-        assert(Thread.isMainThread, "MMTHUD needs to be accessed on the main thread.")
+        assert(Thread.isMainThread, "Hud needs to be accessed on the main thread.")
         
         minShowTimer?.invalidate()
         useAnimation = animated
@@ -484,7 +484,7 @@ extension YFProgressHud {
     }
     
     public func hide(animated: Bool) {
-        assert(Thread.isMainThread, "MBProgressHUD needs to be accessed on the main thread.")
+        assert(Thread.isMainThread, "Hud needs to be accessed on the main thread.")
         graceTimer?.invalidate()
         useAnimation = animated
         hasFinished = true
@@ -642,6 +642,7 @@ extension YFProgressHud {
 
 
 extension YFProgressHud {
+    @discardableResult
     public class func showAdded(to view: UIView, animated: Bool) -> YFProgressHud {
         let hud: YFProgressHud = YFProgressHud(view: view)
         hud.removeFromSuperViewOnHide = true
@@ -650,6 +651,7 @@ extension YFProgressHud {
         return hud
     }
     
+    @discardableResult
     public class func hide(for view: UIView, animated: Bool) -> Bool {
         guard let hud = self.hud(for: view) else {
             return false
@@ -661,6 +663,7 @@ extension YFProgressHud {
         return true
     }
     
+    @discardableResult
     public class func hud(for view: UIView) -> YFProgressHud? {
         let subviewsEnum = view.subviews.reversed()
         
