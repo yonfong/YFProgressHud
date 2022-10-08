@@ -8,7 +8,6 @@
 
 import UIKit
 import YFProgressHud
-import SnapKit
 
 enum HUDProgressPosition {
     case top, middle, bottom
@@ -101,13 +100,6 @@ extension UIView {
                 hud.offset = CGPoint(x: 0.0, y: 150)
             default:
                 hud.offset = CGPoint(x: 0.0, y: -50)
-            }
-        }
-
-        if mode == .text {
-            hud.bezelView.snp.updateConstraints { (make) in
-                make.width.equalTo(self.bounds.width * (2.0 / 3.0)).priority(1000)
-                make.center.equalToSuperview()
             }
         }
     }

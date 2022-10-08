@@ -122,15 +122,14 @@ extension SpecialViewController: UITableViewDelegate {
             frame.size.width = image.size.width + 49 * 2
             contentView.bounds = frame
             
-            imageView.snp.makeConstraints { (make) in
-                make.centerX.equalToSuperview()
-                make.top.equalToSuperview().offset(12)
-            }
-            label.snp.makeConstraints { (make) in
-                make.centerX.equalToSuperview()
-                make.top.equalTo(imageView.snp.bottom).offset(13)
-                make.bottom.equalToSuperview().offset(-20)
-            }
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
+            imageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12).isActive = true
+            
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true
+            label.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 13).isActive = true
+            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20).isActive = true
             
             print("contentView \(contentView.frame)")
             rootView.showCustomView(contentView, delay: 10, backColor: UIColor.clear, completion: {

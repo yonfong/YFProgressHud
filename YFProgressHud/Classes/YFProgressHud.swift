@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import SnapKit
 
 public protocol YFProgressHUDDelegate: AnyObject {
     func hudWasHidden(hud: YFProgressHud)
@@ -115,14 +114,6 @@ open class YFProgressHud: UIView {
         }
     }
     
-    private(set) public lazy var bezelView: HudBackgroundView = {
-        let view = HudBackgroundView()
-        view.translatesAutoresizingMaskIntoConstraints = false;
-        view.layer.cornerRadius = 5
-        view.alpha = 0
-        return view
-    }()
-
     private(set) public lazy var backgroundView: HudBackgroundView = {
         let view = HudBackgroundView(frame: bounds)
         view.style = .solidColor
@@ -132,9 +123,18 @@ open class YFProgressHud: UIView {
         return view
     }()
     
+    private(set) public lazy var bezelView: HudBackgroundView = {
+        let view = HudBackgroundView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 5
+        view.alpha = 0
+        return view
+    }()
+
     public var customView: UIView? {
         didSet {
             if oldValue != customView && mode == .customView {
+                customView?.translatesAutoresizingMaskIntoConstraints = false
                 self.updateIndicators()
             }
         }
@@ -147,6 +147,7 @@ open class YFProgressHud: UIView {
         label.isOpaque = false
         label.backgroundColor = .clear
         label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -157,6 +158,7 @@ open class YFProgressHud: UIView {
         label.isOpaque = false
         label.backgroundColor = .clear
         label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -165,6 +167,7 @@ open class YFProgressHud: UIView {
         let button = HudRoundedButton(type: .custom)
         button.titleLabel?.textAlignment = .center
         button.titleLabel?.font = UIFont.systemFont(ofSize: KDefaultDetailsLabelFontSize, weight: .medium)
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -172,17 +175,23 @@ open class YFProgressHud: UIView {
     
     var useAnimation: Bool = true
     var hasFinished: Bool = false
-    var indicator: UIView?
     var showStarted: Date?
+    var indicator: UIView? {
+        didSet {
+            indicator?.translatesAutoresizingMaskIntoConstraints = false
+        }
+    }
     
     lazy var topSpacer: UIView = {
         let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
         view.isHidden = true
         return view
     }()
     
     lazy var bottomSpacer: UIView = {
         let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
         view.isHidden = true
         return view
     }()
@@ -204,8 +213,7 @@ open class YFProgressHud: UIView {
 
     
     // MARK: - Lifecycle
-    
-    convenience init(view:UIView){
+    convenience init(view:UIView) {
         self.init(frame: view.bounds)
     }
     
@@ -251,15 +259,14 @@ open class YFProgressHud: UIView {
         addSubview(backgroundView)
         addSubview(bezelView)
         
-        let defaultColor = contentColor
-        titleLabel.textColor = defaultColor
-        detailsLabel.textColor = defaultColor
-        actionButton.setTitleColor(defaultColor, for: .normal)
+        titleLabel.textColor = contentColor
+        detailsLabel.textColor = contentColor
+        actionButton.setTitleColor(contentColor, for: .normal)
         
+        bezelView.addSubview(topSpacer)
         bezelView.addSubview(titleLabel)
         bezelView.addSubview(detailsLabel)
         bezelView.addSubview(actionButton)
-        bezelView.addSubview(topSpacer)
         bezelView.addSubview(bottomSpacer)
     }
     
@@ -355,36 +362,59 @@ open class YFProgressHud: UIView {
     
     public override func updateConstraints() {
         
-        bezelView.snp.remakeConstraints { (make) in
-            make.centerX.equalToSuperview().offset(offset.x)
-            make.centerY.equalToSuperview().offset(offset.y)
-            make.width.greaterThanOrEqualTo(minSize.width)
-            make.height.greaterThanOrEqualTo(minSize.height)
-            make.top.greaterThanOrEqualTo(margin)
-            make.bottom.lessThanOrEqualTo(-margin)
-            
-            if let horizontalMargin = bezelHorizontalMargin {
-                make.left.greaterThanOrEqualToSuperview().offset(horizontalMargin)
-                make.right.lessThanOrEqualToSuperview().offset(-horizontalMargin)
-            } else {
-                make.left.greaterThanOrEqualTo(margin)
-                make.right.lessThanOrEqualTo(-margin)
-            }
+        self.removeConstraints(constraints)
+        bezelView.removeConstraints(bezelView.constraints)
+        topSpacer.removeConstraints(topSpacer.constraints)
+        bottomSpacer.removeConstraints(bottomSpacer.constraints)
+        
+        var bezelViewConstraints = [
+            bezelView.centerXAnchor.constraint(equalTo: self.centerXAnchor, constant: offset.x),
+            bezelView.centerYAnchor.constraint(equalTo: self.centerYAnchor, constant: offset.y),
+            bezelView.widthAnchor.constraint(greaterThanOrEqualToConstant: minSize.width),
+            bezelView.heightAnchor.constraint(greaterThanOrEqualToConstant: minSize.height),
+            bezelView.topAnchor.constraint(greaterThanOrEqualTo: self.topAnchor, constant: margin),
+            bezelView.bottomAnchor.constraint(lessThanOrEqualTo: self.bottomAnchor, constant: -margin)
+        ]
+        if let horizontalMargin = bezelHorizontalMargin {
+            let leadingConstraint = bezelView.leadingAnchor.constraint(greaterThanOrEqualTo: self.leadingAnchor, constant: horizontalMargin)
+            let trailingConstraint = bezelView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -horizontalMargin)
+            bezelViewConstraints.append(leadingConstraint)
+            bezelViewConstraints.append(trailingConstraint)
+        } else {
+            let leadingConstraint = bezelView.leadingAnchor.constraint(greaterThanOrEqualTo: self.leadingAnchor, constant: margin)
+            let trailingConstraint = bezelView.trailingAnchor.constraint(lessThanOrEqualTo: self.trailingAnchor, constant: -margin)
+            bezelViewConstraints.append(leadingConstraint)
+            bezelViewConstraints.append(trailingConstraint)
         }
         
-        topSpacer.snp.remakeConstraints { (make) in
-            if let verticalMargin = bezelVerticalMargin {
-                make.height.equalTo(verticalMargin)
-            } else {
-                make.height.equalTo(margin)
-            }
-            make.top.left.right.equalToSuperview()
+        if square {
+            let squareConstraint = NSLayoutConstraint(item: bezelView, attribute: .width, relatedBy: .equal, toItem: bezelView, attribute: .height, multiplier: 1, constant: 0)
+            squareConstraint.priority = UILayoutPriority(997)
+            bezelViewConstraints.append(squareConstraint)
         }
+        NSLayoutConstraint.activate(bezelViewConstraints)
+        
+        var topSpacerConstraints = [
+            topSpacer.topAnchor.constraint(equalTo: bezelView.topAnchor),
+            topSpacer.leadingAnchor.constraint(equalTo: bezelView.leadingAnchor),
+            topSpacer.trailingAnchor.constraint(equalTo: bezelView.trailingAnchor)
+        ]
+        if let verticalMargin = bezelVerticalMargin {
+            let heightConstraint = topSpacer.heightAnchor.constraint(equalToConstant: verticalMargin)
+            topSpacerConstraints.append(heightConstraint)
+        } else {
+            let heightConstraint = topSpacer.heightAnchor.constraint(equalToConstant: margin)
+            topSpacerConstraints.append(heightConstraint)
+        }
+        NSLayoutConstraint.activate(topSpacerConstraints)
 
-        bottomSpacer.snp.remakeConstraints { (make) in
-            make.height.equalTo(topSpacer.snp.height)
-            make.bottom.left.right.equalToSuperview()
-        }
+        let bottomSpacerConstraints = [
+            bottomSpacer.bottomAnchor.constraint(equalTo: bezelView.bottomAnchor),
+            bottomSpacer.leadingAnchor.constraint(equalTo: bezelView.leadingAnchor),
+            bottomSpacer.trailingAnchor.constraint(equalTo: bezelView.trailingAnchor),
+            bottomSpacer.heightAnchor.constraint(equalTo: topSpacer.heightAnchor)
+        ]
+        NSLayoutConstraint.activate(bottomSpacerConstraints)
         
         var subviews = [UIView]()
         if let indicator = indicator, !indicator.isHidden {
@@ -404,32 +434,35 @@ open class YFProgressHud: UIView {
         }
 
         subviews.enumerated().forEach { (index, view) in
-            view.snp.remakeConstraints { (make) in
-                make.centerX.equalToSuperview()
-                make.left.greaterThanOrEqualToSuperview().offset(margin)
-                make.right.lessThanOrEqualToSuperview().offset(-margin)
-                
-                if view == customView {
-                    make.width.equalTo(view.bounds.width)
-                }
-                
-                if index == 0 {
-                    make.top.equalTo(topSpacer.snp.bottom)
-                    if subviews.count == 1 {
-                        make.bottom.equalTo(bottomSpacer.snp.top)
-                    }
-                } else if index == subviews.count - 1 {
-                    make.top.equalTo(subviews[index - 1].snp.bottom).offset(KDefaultPadding)
-                    make.bottom.equalTo(bottomSpacer.snp.top)
-                    
-                } else {
-                    make.top.equalTo(subviews[index - 1].snp.bottom).offset(KDefaultPadding)
-                }
+            var constraints = [
+                view.centerXAnchor.constraint(equalTo: bezelView.centerXAnchor),
+                view.leadingAnchor.constraint(greaterThanOrEqualTo: bezelView.leadingAnchor, constant: margin),
+                view.trailingAnchor.constraint(lessThanOrEqualTo: bezelView.trailingAnchor, constant: -margin),
+            ]
+            
+            if view == customView {
+                let widthConstraint = view.widthAnchor.constraint(equalToConstant: view.bounds.width)
+                constraints.append(widthConstraint)
             }
-        }
-    
-        if square {
-            bezelView.addConstraint(NSLayoutConstraint(item: bezelView, attribute: .width, relatedBy: .equal, toItem: bezelView, attribute: .height, multiplier: 1, constant: 0))
+            
+            if index == 0 {
+                let topConstraint = view.topAnchor.constraint(equalTo: topSpacer.bottomAnchor)
+                constraints.append(topConstraint)
+                if subviews.count == 1 {
+                    let bottomConstraint = view.bottomAnchor.constraint(equalTo: bottomSpacer.topAnchor)
+                    constraints.append(bottomConstraint)
+                }
+            } else if index == subviews.count - 1 {
+                let topConstraint = view.topAnchor.constraint(equalTo: subviews[index - 1].bottomAnchor, constant: KDefaultPadding)
+                constraints.append(topConstraint)
+                let bottomConstraint = view.bottomAnchor.constraint(equalTo: bottomSpacer.topAnchor)
+                constraints.append(bottomConstraint)
+            } else {
+                let topConstraint = view.topAnchor.constraint(equalTo: subviews[index - 1].bottomAnchor, constant: KDefaultPadding)
+                constraints.append(topConstraint)
+            }
+            
+            NSLayoutConstraint.activate(constraints)
         }
         
         super.updateConstraints()
