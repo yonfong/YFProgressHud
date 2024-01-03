@@ -276,7 +276,12 @@ open class YFProgressHud: UIView {
 
         switch mode {
         case .indeterminate:
-            let indicatorView = UIActivityIndicatorView(style: .whiteLarge)
+            var indicatorView: UIActivityIndicatorView!
+            if #available(iOS 13, *) {
+                indicatorView = UIActivityIndicatorView(style: .large)
+            } else {
+                indicatorView = UIActivityIndicatorView(style: .whiteLarge)
+            }
             indicatorView.startAnimating()
             bezelView.addSubview(indicatorView)
             indicator = indicatorView
@@ -439,11 +444,6 @@ open class YFProgressHud: UIView {
                 view.leadingAnchor.constraint(greaterThanOrEqualTo: bezelView.leadingAnchor, constant: margin),
                 view.trailingAnchor.constraint(lessThanOrEqualTo: bezelView.trailingAnchor, constant: -margin),
             ]
-            
-            if view == customView {
-                let widthConstraint = view.widthAnchor.constraint(equalToConstant: view.bounds.width)
-                constraints.append(widthConstraint)
-            }
             
             if index == 0 {
                 let topConstraint = view.topAnchor.constraint(equalTo: topSpacer.bottomAnchor)
